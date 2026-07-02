@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi-VN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Phân tích Dữ liệu.exe</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/gif" href="images\gifs\favicon.gif">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+
+  <div class="terminal-bar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="terminal-title">phan_tich_du_lieu.exe</span>
+  </div>
+
+  <div class="main-card">
+    <p class="big-title">Phân tích Dữ liệu<span>.exe</span></p>
+    <p class="commit-msg">// last commit: "fix bug" · author: 1 sinh viên rảnh · commit lần cuối: 3 phút trước · lần commit thứ 47</p>
+
+    <div class="warning-tape">
+      <p>⚠ DISCLAIMER — đọc hoặc không, kết quả như nhau:</p>
+      <p>· Chắc chắn có bug &nbsp;·&nbsp; Dữ liệu có thể sai &nbsp;·&nbsp; Không dùng vào việc quan trọng</p>
+      <p>· Chế độ cợt nhả: <strong>ON</strong> &nbsp;·&nbsp; Không thể tắt vì bạn không phải admin</p>
+    </div>
+
+    <div class="input-group">
+      <p class="input-label"><span class="ln">01</span> tên bộ dữ liệu <em style="font-weight:400;font-style:normal;color:#bbb">(bỏ qua nếu lười)</em></p>
+      <input type="text" id="titleInput" placeholder='"điểm thi — không cho thầy xem"'>
+    </div>
+    <div class="input-group">
+      <p class="input-label"><span class="ln">02</span> nhập số, cách nhau bằng dấu phẩy</p>
+      <input type="text" id="dataInput" placeholder="1, 5, 3, 9, 2, 7, 4 — hoặc cứ thử xem">
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-main" id="analyzeBtn">▶ Chạy phân tích</button>
+      <button class="btn-clear" id="clearBtn">Clear</button>
+      <button class="btn-import-xlsx" id="importBtn">Nhập file Excel (chế độ nhà phát triển)</button>
+    </div>
+  </div>
+
+  <div class="results-area" id="resultsArea">
+    <div class="result-header-row">
+      <p class="result-name" id="rTitle">—</p>
+      <span class="result-meta" id="rMeta">—</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card hot">
+        <p class="stat-label">mean (trung bình)</p>
+        <p class="stat-val" id="rMean">—</p>
+        <p class="stat-roast" id="rMeanRoast"></p>
+      </div>
+      <div class="stat-card hot">
+        <p class="stat-label">median (trung vị)</p>
+        <p class="stat-val" id="rMedian">—</p>
+        <p class="stat-roast" id="rMedianRoast"></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">min</p>
+        <p class="stat-val" id="rMin">—</p>
+        <p class="stat-roast" id="rMinRoast"></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">max</p>
+        <p class="stat-val" id="rMax">—</p>
+        <p class="stat-roast" id="rMaxRoast"></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">range (biên độ)</p>
+        <p class="stat-val" id="rRange">—</p>
+        <p class="stat-roast" id="rRangeRoast"></p>
+      </div>
+      <div class="stat-card">
+        <p class="stat-label">std dev (độ lệch chuẩn)</p>
+        <p class="stat-val" id="rStdDev">—</p>
+        <p class="stat-roast" id="rStdRoast"></p>
+      </div>
+    </div>
+
+    <div class="sorted-row">
+      <span class="comment">// sorted — từ bé đến lớn, như hành trình trưởng thành</span>
+      <span id="rSorted"></span>
+    </div>
+
+    <div class="verdict-box">
+      <p class="verdict-label">// VERDICT — AI đọc không dấu</p>
+      <span id="rVerdict"></span>
+    </div>
+  </div>
+
+  <div class="footer-code">
+    <span class="green">Không lưu mỗi khi thoát</span> &nbsp;·&nbsp;
+    <span class="green">Góp ý thêm sửa tính năng UI ở m.me/laffeyzhieu.mtz</span> &nbsp;·&nbsp;
+    <span class="red">Vẫn có bug (chưa tìm ra)</span><br>
+    made by LaffeyzHieu (QuyKhietDN™) and Claude
+  </div>
+
+</div>
+<script>
+  function fmt(n) {
+    return Number.isInteger(n) ? n.toString() : parseFloat(n.toFixed(2)).toString();
+  }
+
+  function analyzeData(arr) {
+    const sorted = [...arr].sort((a,b)=>a-b);
+    const n = sorted.length;
+    const mean = sorted.reduce((s,v)=>s+v,0)/n;
+    const mid = Math.floor(n/2);
+    const median = n%2!==0 ? sorted[mid] : (sorted[mid-1]+sorted[mid])/2;
+    const variance = sorted.reduce((s,v)=>s+Math.pow(v-mean,2),0)/n;
+    return { sorted, count:n, mean, median, min:sorted[0], max:sorted[n-1], range:sorted[n-1]-sorted[0], stdDev:Math.sqrt(variance) };
+  }
+
+  function getMeanRoast(mean, count) {
+    if (count < 3) return "mẫu nhỏ quá, mean này... fragile";
+    if (mean > 90) return "cao vậy? thầy có tin không?";
+    if (mean > 70) return "tạm được, chưa đáng tự hào lắm";
+    if (mean > 50) return "passing. barely.";
+    if (mean > 30) return "thôi... cố lên bạn ơi";
+    return "ôi bạn ơi...";
+  }
+
+  function getMedianRoast(median, mean) {
+    const diff = Math.abs(median - mean);
+    if (diff < 0.5) return "median ≈ mean → phân phối đẹp, hiếm";
+    if (median > mean) return "median > mean → có outlier kéo xuống";
+    return "mean > median → có outlier kéo lên";
+  }
+
+  function getMinRoast(min, arr) {
+    const ties = arr.filter(x=>x===min).length;
+    return ties > 1 ? `${ties} người cùng min, solidarity` : "ai đây? dũng cảm thật";
+  }
+
+  function getMaxRoast(max) {
+    if (max === 100) return "điểm tuyệt đối. đáng ngờ.";
+    if (max === 10) return "10/10, xịn đó";
+    return "outlier tiềm năng";
+  }
+
+  function getRangeRoast(range) {
+    if (range === 0) return "range = 0?? copy nhau à?";
+    if (range > 80) return "data này... loạn thật sự";
+    if (range > 40) return "chênh lệch khá lớn đấy";
+    return "spread ổn áp";
+  }
+
+  function getStdRoast(std, mean) {
+    const cv = mean !== 0 ? std/mean : 0;
+    if (cv > 0.5) return "CV > 50%, data bay tứ tung";
+    if (cv > 0.3) return "biến động tương đối cao";
+    return "tương đối ổn định";
+  }
+
+  function getVerdict(r) {
+    const cv = r.mean !== 0 ? r.stdDev/r.mean : 0;
+    let lines = [];
+    if (r.count < 5) lines.push("Mẫu chỉ có " + r.count + " quan sát — kết luận gì cũng hơi liều.");
+    if (cv > 0.4) lines.push("Độ lệch chuẩn cao bất thường. Hoặc data đa dạng, hoặc ai đó nhập nhầm.");
+    if (r.range === 0) lines.push("Tất cả giá trị bằng nhau. Đây là data hay điểm danh chuyên cần?");
+    if (r.mean > r.median * 1.3) lines.push("Mean bị kéo bởi outlier. Median đáng tin hơn trong TH này.");
+    if (lines.length === 0) lines.push("Data trông ổn. Không có gì đáng lo — hoặc bug chưa phát hiện ra.");
+    lines.push("Disclaimer: verdict này do code viết lúc " + new Date().toLocaleTimeString('vi-VN') + ". Không chịu trách nhiệm.");
+    return lines.join(" ");
+  }
+
+  document.getElementById('analyzeBtn').addEventListener('click', () => {
+    const title = document.getElementById('titleInput').value.trim();
+    const raw = document.getElementById('dataInput').value.trim();
+    if (!raw) { alert('Ô trống kìa. Nhập số đi chứ, nhập vibe không tính đâu.'); return; }
+    const nums = raw.split(',').map(x=>parseFloat(x.trim())).filter(x=>!isNaN(x));
+    if (!nums.length) { alert('Không tìm thấy số nào hợp lệ. Dấu phẩy thôi chưa đủ đâu bạn ơi.'); return; }
+
+    const r = analyzeData(nums);
+    document.getElementById('rTitle').textContent = title || 'bo_du_lieu_khong_ten.csv';
+    document.getElementById('rMeta').textContent = r.count + ' quan sát · ' + new Date().toLocaleTimeString('vi-VN');
+    document.getElementById('rMean').textContent = fmt(r.mean);
+    document.getElementById('rMedian').textContent = fmt(r.median);
+    document.getElementById('rMin').textContent = fmt(r.min);
+    document.getElementById('rMax').textContent = fmt(r.max);
+    document.getElementById('rRange').textContent = fmt(r.range);
+    document.getElementById('rStdDev').textContent = fmt(r.stdDev);
+    document.getElementById('rMeanRoast').textContent = getMeanRoast(r.mean, r.count);
+    document.getElementById('rMedianRoast').textContent = getMedianRoast(r.median, r.mean);
+    document.getElementById('rMinRoast').textContent = getMinRoast(r.min, nums);
+    document.getElementById('rMaxRoast').textContent = getMaxRoast(r.max);
+    document.getElementById('rRangeRoast').textContent = getRangeRoast(r.range);
+    document.getElementById('rStdRoast').textContent = getStdRoast(r.stdDev, r.mean);
+    document.getElementById('rSorted').textContent = r.sorted.join('  ·  ');
+    document.getElementById('rVerdict').textContent = getVerdict(r);
+    document.getElementById('resultsArea').classList.add('visible');
+  });
+
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    document.getElementById('titleInput').value = '';
+    document.getElementById('dataInput').value = '';
+    document.getElementById('resultsArea').classList.remove('visible');
+  });
+</script>
+</body>
+</html>

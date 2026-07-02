@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi-VN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — không tìm thấy · MatheMagic</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: #0e0e0f;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .terminal {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    /* Chrome bar */
+    .chrome {
+      background: #161618;
+      border: 0.5px solid #2a2a2e;
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      padding: 9px 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .dot.r { background: #E24B4A; } .dot.y { background: #EF9F27; } .dot.g { background: #639922; }
+    .chrome-title { flex: 1; text-align: center; font-size: 11px; color: #444; }
+
+    /* Terminal body */
+    .body {
+      background: #0e0e0f;
+      border: 0.5px solid #2a2a2e;
+      border-radius: 0 0 10px 10px;
+      padding: 1.5rem;
+      min-height: 360px;
+    }
+
+    .line {
+      font-size: 12px;
+      line-height: 1.9;
+      opacity: 0;
+      animation: appear 0.05s forwards;
+    }
+    .line.green  { color: #639922; }
+    .line.red    { color: #E24B4A; }
+    .line.yellow { color: #EF9F27; }
+    .line.dim    { color: #444; }
+    .line.white  { color: #eee; }
+    .line.accent { color: #D85A30; }
+    .line.blue   { color: #60A5FA; }
+
+    @keyframes appear { to { opacity: 1; } }
+
+    .cursor {
+      display: inline-block;
+      width: 8px; height: 14px;
+      background: #D85A30;
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+      margin-left: 2px;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* Big 404 */
+    .big404 {
+      font-size: 72px;
+      font-weight: 700;
+      color: #E24B4A;
+      opacity: 0;
+      letter-spacing: -2px;
+      animation: appear 0.1s 2.8s forwards;
+      line-height: 1;
+      margin: 0.5rem 0;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex; gap: 8px; margin-top: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.3s 4.2s forwards;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .btn {
+      padding: 10px 18px; font-family: 'JetBrains Mono', monospace;
+      font-size: 12px; cursor: pointer; border-radius: 8px;
+      transition: opacity 0.15s, transform 0.1s;
+      text-decoration: none; display: inline-block;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn:active { transform: scale(0.98); }
+    .btn-home {
+      background: #D85A30; color: #fff; border: none; flex: 1; text-align: center;
+    }
+    .btn-report {
+      background: transparent; color: #888;
+      border: 0.5px solid #2a2a2e; flex: 1; text-align: center;
+    }
+    .btn-report:hover { color: #E24B4A; border-color: #E24B4A; }
+
+    /* Scanline effect */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+      pointer-events: none;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+<div class="terminal">
+  <div class="chrome">
+    <span class="dot r"></span>
+    <span class="dot y"></span>
+    <span class="dot g"></span>
+    <span class="chrome-title">mathemagic_FINAL_v2_USE_THIS_ONE.exe — bash</span>
+  </div>
+  <div class="body" id="output"></div>
+</div>
+
+<script>
+const LINES = [
+  { text: '$ cd /mathemagic && ./start.sh', cls: 'dim',    delay: 0 },
+  { text: '[  OK  ] Khởi động MatheMagic...', cls: 'green', delay: 300 },
+  { text: '[  OK  ] Nạp chế độ cợt nhả...', cls: 'green', delay: 700 },
+  { text: '[ INFO ] Đang tìm trang bạn yêu cầu...', cls: 'yellow', delay: 1100 },
+  { text: '[ WARN ] Không tìm thấy route...', cls: 'yellow', delay: 1500 },
+  { text: '[ WARN ] Thử lại lần 2...', cls: 'yellow', delay: 1900 },
+  { text: '[ WARN ] Thử lại lần 3... (vẫn không có)', cls: 'yellow', delay: 2200 },
+  { text: 'FATAL ERROR: PAGE_NOT_FOUND', cls: 'red', delay: 2600, big: true },
+  { text: '', cls: 'dim', delay: 2800 },
+  { text: 'Stack trace (vô dụng nhưng nhìn chuyên nghiệp):', cls: 'dim', delay: 3000 },
+  { text: '  at Router.resolve (/src/App.jsx:47:12)', cls: 'dim', delay: 3100 },
+  { text: '  at navigate (/src/App.jsx:23:8)', cls: 'dim', delay: 3200 },
+  { text: '  at Object.<anonymous> (/src/main.jsx:6:1)', cls: 'dim', delay: 3300 },
+  { text: '  at Module._compile (node:internal:wtf:404)', cls: 'dim', delay: 3400 },
+  { text: '  at someone typed the wrong url (probably you)', cls: 'red', delay: 3500 },
+  { text: '', cls: 'dim', delay: 3600 },
+  { text: 'EXIT CODE: 404 · không chịu trách nhiệm · chế độ cợt nhả: vẫn ON', cls: 'accent', delay: 3800 },
+  { text: 'Nếu bạn nghĩ đây là lỗi, hãy ăn vạ với admin để được giải quyết (hoặc không)', cls: 'blue', delay: 4000 },
+]
+
+const out = document.getElementById('output')
+let cursorEl = null
+
+function addLine(text, cls, isBig) {
+  if (cursorEl) cursorEl.remove()
+
+  if (isBig) {
+    const el = document.createElement('div')
+    el.className = 'big404'
+    el.textContent = '404'
+    out.appendChild(el)
+  }
+
+  const el = document.createElement('div')
+  el.className = `line ${cls}`
+  el.textContent = text
+
+  // Thêm nút sau dòng cuối
+  out.appendChild(el)
+
+  // cursor nhảy xuống cuối
+  cursorEl = document.createElement('span')
+  cursorEl.className = 'cursor'
+  out.appendChild(cursorEl)
+
+  // Auto scroll
+  out.scrollTop = out.scrollHeight
+}
+
+// Chạy từng dòng
+LINES.forEach(({ text, cls, delay, big }) => {
+  setTimeout(() => addLine(text, cls, big), delay)
+})
+
+// Hiện nút sau khi xong
+setTimeout(() => {
+  if (cursorEl) cursorEl.remove()
+
+  const btnRow = document.createElement('div')
+  btnRow.className = 'btn-row'
+  btnRow.innerHTML = `
+    <a href="https://jvmelaffeyz.web.app" class="btn btn-home">↩ về trang chủ</a>
+    <button class="btn btn-report" onclick="anVan()">ăn vạ với admin</button>
+  `
+  out.appendChild(btnRow)
+}, 4200)
+
+function anVan() {
+  const msgs = [
+    '[ INFO ] Đang gửi report...',
+    '[ INFO ] Admin đang ngủ...',
+    '[ WARN ] Admin vẫn đang ngủ...',
+    '[ ERRO ] Admin không có ở đây.',
+    '[ INFO ] Report đã được lưu vào /dev/null',
+    '[ OK   ] Ăn vạ thành công · không ai quan tâm, chúc may mắn 🫠',
+  ]
+  let i = 0
+  const btn = document.querySelector('.btn-report')
+  btn.disabled = true
+  btn.textContent = 'đang ăn vạ...'
+
+  const interval = setInterval(() => {
+    addLine(msgs[i], i < 3 ? 'yellow' : i === 3 ? 'red' : i === 4 ? 'dim' : 'green', false)
+    i++
+    if (i >= msgs.length) {
+      clearInterval(interval)
+      btn.textContent = 'đã ăn vạ xong (vô ích)'
+    }
+  }, 500)
+}
+</script>
+</body>
+</html>
