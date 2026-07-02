@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi-VN">
+<head>
+    <meta charset="UTF-8">
+    <title>Phân tích Dữ liệu.exe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <h1>Phân tích Dữ liệu.exe</h1>
+    <div id="modau">
+        <p>Trang này được des bởi 1 sinh viên rảnh tay, uhmmm</p>
+        <li>Chắc chắn có bug</li>
+        <li>Dữ liệu có thể không chính xác</li>
+        <li>Không dùng trong mục đích quan trọng</li>
+        <p>Hướng dẫn sử dụng:</p>
+        <ol>
+            <li>Nhập tên bộ dữ liệu (tùy chọn không bắt buộc)</li>
+            <li>Nhập các số cách nhau bằng dấu phẩy</li>
+            <li>Nhấn "Phân tích" để xem kết quả</li>
+        </ol>
+    </div>
+    <div id="tinhtoan">
+        <div id="box">
+            <input type="text" id="titleInput" placeholder="Nhập tên bộ dữ liệu" style="display:block; margin-bottom:10px; width:280px;"><br>
+            <input type="text" id="input" placeholder="Nhập dữ liệu cách nhau bằng dấu phẩy" style="width:280px;">
+            <button id="analyzeBtn">Phân tích</button>
+        </div>
+    </div>
+
+    <script type="module">
+        // 1. Nhúng các hàm cần thiết từ CDN
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // 2. Chìa khóa cấu hình Firebase của bạn
+        const firebaseConfig = {
+          apiKey: "AIzaSyC6SB_1tMRZOVWolfAoJpvk_sFr51y9BBY",
+          authDomain: "jvmelaffeyz.firebaseapp.com",
+          projectId: "jvmelaffeyz",
+          storageBucket: "jvmelaffeyz.firebasestorage.app",
+          messagingSenderId: "255377099587",
+          appId: "1:255377099587:web:2b1150a8a1e8203e2afdf6",
+          measurementId: "G-3VFM46HFDQ"
+        };
+
+        // 3. Khởi tạo
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 4. Hàm xử lý tính toán "Summary of Data" bằng JavaScript thuần
+        function analyzeData(numbersArray) {
+          if (!numbersArray || numbersArray.length === 0) return null;
+          
+          const sorted = [...numbersArray].sort((a, b) => a - b);
+          const count = sorted.length;
+          
+          const mean = sorted.reduce((sum, val) => sum + val, 0) / count;
+          
+          const mid = Math.floor(count / 2);
+          const median = count % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+          
+          const variance = sorted.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / count;
+          const stDev = Math.sqrt(variance);
+
+          return {
+            count: count,
+            mean: Number(mean.toFixed(2)),
+            median: Number(median.toFixed(2)),
+            min: sorted[0],
+            max: sorted[count - 1],
+            range: sorted[count - 1] - sorted[0],
+            standardDeviation: Number(stDev.toFixed(2))
+          };
+        }
+
+        // 5. Hàm đẩy dữ liệu lên Firebase
+        async function saveAnalysisToFirebase(title, rawData) {
+          try {
+            const summary = analyzeData(rawData);
+            if (!summary) return;
+
+            const documentData = {
+              title: title || "Bộ dữ liệu không tên.ini",
+              rawData: rawData,
+              summary: summary,
+              createdAt: new Date().toISOString()
+            };
+
+            const docRef = await addDoc(collection(db, "data_summaries"), documentData);
+            console.log("Đã lưu lên Firestore thành công! ID:", docRef.id);
+            alert("Phân tích xong và đã lưu lên Firebase thành công! ID: " + docRef.id);
+            
+          } catch (error) {
+            console.error("Lỗi khi đẩy dữ liệu:", error);
+            alert("Thôi rồi! Lỗi: " + error.message);
+          }
+        }
+
+        // 6. XỬ LÝ SỰ KIỆN CLICK NÚT "PHÂN TÍCH"
+        document.getElementById("analyzeBtn").addEventListener("click", () => {
+            const titleValue = document.getElementById("titleInput").value.trim();
+            const inputValue = document.getElementById("input").value.trim();
+            
+            if (!inputValue) {
+                alert("Hình như ô nhập dữ liệu đang có vấn đề");
+                return;
+            }
+
+            // Xử lý chuỗi nhập vào: Tách dấu phẩy, chuyển thành số thực, lọc bỏ ký tự lỗi
+            const numericArray = inputValue.split(",")
+                                           .map(item => parseFloat(item.trim()))
+                                           .filter(item => !isNaN(item));
+
+            if (numericArray.length === 0) {
+                alert("Invalid data,ruler: Vui lòng nhập ít nhất một (nhiều) số hợp lệ, cách nhau bằng dấu phẩy (,)");
+                return;
+            }
+
+            // Tiến hành tính toán và lưu thẳng lên Cloud Firestore
+            saveAnalysisToFirebase(titleValue, numericArray);
+        });
+    </script>
+</body>
+</html>
